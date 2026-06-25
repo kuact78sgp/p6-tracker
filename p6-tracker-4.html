@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>P6 MA Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; padding: 14px 12px; }
+  #app { max-width: 520px; margin: 0 auto; }
+  button { cursor: pointer; font-family: inherit; }
+  input  { font-family: inherit; }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .header h1 { font-size: 17px; font-weight: 800; color: #1e293b; }
+  .header p  { font-size: 11px; color: #64748b; margin-top: 2px; }
+  .header-btns { display: flex; gap: 6px; }
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px; margin-bottom: 12px; }
+  .section-label { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .btn { padding: 6px 11px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; font-size: 12px; font-weight: 600; color: #475569; }
+  .btn-dark { background: #1e293b !important; color: #fff !important; border-color: #1e293b !important; }
+  .btn-purple { background: #6366f1; color: #fff; border: none; padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+  .btn-dashed { border: 2px dashed #cbd5e1 !important; background: #f8fafc !important; color: #475569 !important; }
+  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chip { padding: 5px 11px; border-radius: 8px; border: 2px solid #e2e8f0; background: #f8fafc; color: #475569; font-size: 12px; font-weight: 700; }
+  .chip.active { border-color: #6366f1; background: #eef2ff; color: #4338ca; }
+  .input-row { display: flex; gap: 6px; }
+  .input-row input { flex: 1; padding: 7px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px; color: #1e293b; background: #f8fafc; outline: none; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab { flex: 1; padding: 7px; border-radius: 8px; border: none; background: #fff; color: #64748b; font-size: 12px; font-weight: 700; }
+  .tab.active { background: #1e293b; color: #fff; }
+  .group-grid { display: grid; gap: 5px; margin-bottom: 12px; }
+  .grp-btn { padding: 8px 0; border-radius: 9px; border: 2px solid #e2e8f0; background: #fff; color: #475569; font-size: 14px; font-weight: 800; }
+  .grp-btn.active { border-color: #6366f1; background: #eef2ff; color: #4338ca; }
+  .grp-btn.done   { border-color: #86efac; background: #f0fdf4; color: #166534; }
+  .student-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px 14px; margin-bottom: 8px; }
+  .student-top  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .rounds-row   { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .round-item   { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .round-lbl    { font-size: 9px; color: #94a3b8; }
+  .pill { display: inline-block; padding: 2px 7px; border-radius: 99px; font-size: 11px; font-weight: 700; border: 1px solid; }
+  .status-row   { display: flex; gap: 5px; align-items: center; }
+  .status-btn   { flex: 1; padding: 8px 0; border-radius: 9px; font-size: 13px; font-weight: 800; border: 1px solid; }
+  .round-num    { font-size: 11px; color: #94a3b8; min-width: 28px; }
+  .undo-btn     { background: none; border: none; color: #cbd5e1; font-size: 13px; margin-left: 2px; }
+  .round-badges { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .round-badge  { padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; background: #f1f5f9; color: #94a3b8; }
+  .round-badge.done { background: #1e293b; color: #fff; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+  .stat-card  { background: #fff; border-radius: 10px; padding: 10px 12px; border: 1px solid #e2e8f0; text-align: center; }
+  .stat-val   { font-size: 22px; font-weight: 800; }
+  .stat-lbl   { font-size: 11px; color: #94a3b8; font-weight: 600; }
+  .summary-list { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+  .summary-row  { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid #f1f5f9; }
+  .summary-row:first-child { border-top: none; }
+  .summary-row.needs-r { background: #fffbeb; }
+  .backup-panel { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 14px; margin-bottom: 12px; }
+  .backup-btns  { display: flex; gap: 8px; margin-top: 10px; }
+  .backup-btns button { flex: 1; padding: 9px; border-radius: 9px; font-size: 13px; font-weight: 700; border: 1px solid #cbd5e1; }
+  .next-grp { text-align: center; margin-top: 12px; }
+  .next-grp button { padding: 8px 24px; border-radius: 9px; border: 1px solid #e2e8f0; background: #fff; color: #6366f1; font-size: 13px; font-weight: 700; }
+  .del-btn { background: none; border: none; color: #e2e8f0; font-size: 13px; padding: 0 2px; }
+  .empty { text-align: center; padding: 40px; color: #94a3b8; font-size: 13px; }
+  .loading { text-align: center; padding: 30px; color: #64748b; font-size: 13px; }
+  .sync-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .sync-btn { padding: 5px 10px; border-radius: 7px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 11px; font-weight: 600; color: #6366f1; }
+  .sync-status { font-size: 11px; color: #94a3b8; }
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 999; white-space: nowrap; display: none; }
+  #toast.err { background: #ef4444; }
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">⏳ Loading roster from Google Sheet…</div></div>
+<div id="toast"></div>
+<input type="file" id="import-file" accept=".json" style="display:none" />
+<script>
+const SHEET_ID  = "18jh1BaWKtGe5rqzwK3UrKFefhbZ8rpjpFQ64QDFclXU";
+const API_KEY   = "AIzaSyC7YIgaCtaSUJdny9Mi0Lj7gtgFJYeRLos";
+const SHEET_TAB = "Sheet1";
+const RANGE     = "A:D";
+
+const STATUSES = [
+  { code:"1",  bg:"#dcfce7", fg:"#166534", border:"#86efac" },
+  { code:"R",  bg:"#fef9c3", fg:"#854d0e", border:"#fde047" },
+  { code:"OK", bg:"#dbeafe", fg:"#1e40af", border:"#93c5fd" },
+  { code:"0",  bg:"#fee2e2", fg:"#991b1b", border:"#fca5a5" },
+  { code:"AB", bg:"#f1f5f9", fg:"#475569", border:"#cbd5e1" },
+];
+const STATUS_MAP  = Object.fromEntries(STATUSES.map(s=>[s.code,s]));
+const STORAGE_KEY = "p61-tracker-v2";
+const roundLabel  = n => n===1?"1st Submit":n===2?"Return":`Recorr ${n-2}`;
+const today       = () => new Date().toLocaleDateString("en-SG").replace(/\//g,"-");
+
+let ROSTER = [];
+let state  = { assignments:[], log:{}, activeAsgn:null, activeGrp:1, tab:"track", showBackup:false, newLabel:"", lastSync:null };
+
+function loadState() {
+  try { const r=localStorage.getItem(STORAGE_KEY); if(r){const d=JSON.parse(r);Object.assign(state,d);} } catch{}
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); } catch{}
+}
+
+async function fetchRoster() {
+  try {
+    const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_TAB}!${RANGE}?key=${API_KEY}`;
+    const res=await fetch(url);
+    if(!res.ok) throw new Error("API "+res.status);
+    const data=await res.json();
+    const rows=data.values||[];
+    ROSTER=rows
+      .filter(r=>r[0]&&!isNaN(parseInt(r[0]))&&r[2]&&r[3])
+      .map(r=>({sn:parseInt(r[0]),cls:(r[1]||"").trim(),name:(r[2]||"").trim().replace(/,\s*/g," "),grp:parseInt(r[3])}))
+      .filter(r=>!isNaN(r.grp));
+    state.lastSync=new Date().toLocaleTimeString("en-SG",{hour:"2-digit",minute:"2-digit"});
+    saveState();
+  } catch(e) {
+    console.warn("Fetch failed:",e);
+    useFallbackRoster();
+  }
+  render();
+}
+
+function useFallbackRoster() {
+  ROSTER=[
+    {sn:16,cls:"6HU",name:"ANDREA TIFFANY CHEN LIQI",grp:1},
+    {sn:17,cls:"6HU",name:"TAVIA WANG YUXIN",grp:1},
+    {sn:30,cls:"6LO",name:"DAMIA ATIQAH BINTE ZAID",grp:1},
+    {sn:31,cls:"6LO",name:"GOH GRACE NANELLE",grp:1},
+    {sn:2,cls:"6FA",name:"HEE SZE ENN CHLOE",grp:2},
+    {sn:18,cls:"6HU",name:"DING LE XIN RACHEL",grp:2},
+    {sn:19,cls:"6HU",name:"NG BAO YI",grp:2},
+    {sn:33,cls:"6LO",name:"SO KA YUK KARISSA",grp:2},
+    {sn:12,cls:"6FA",name:"PANG XI EN ELLA",grp:3},
+    {sn:13,cls:"6FA",name:"MICHELLE LEOW",grp:3},
+    {sn:26,cls:"6HU",name:"ELIZA TAN ZI EN",grp:3},
+    {sn:28,cls:"6HU",name:"JOANNA SIN",grp:3},
+    {sn:9,cls:"6FA",name:"SIM SIJIE JEZREEL",grp:4},
+    {sn:24,cls:"6HU",name:"MADISON RENESMEE LIM YING XUAN",grp:4},
+    {sn:29,cls:"6HU",name:"AMELIA TAN JAY-ERN",grp:4},
+    {sn:35,cls:"6LO",name:"JESSE SEE THOR XUAN TONG",grp:4},
+    {sn:37,cls:"6LO",name:"JOHANNA PHOEBE CHONG JIA-EN",grp:5},
+    {sn:21,cls:"6HU",name:"SIM ZHI HUI AVELYN",grp:5},
+    {sn:8,cls:"6FA",name:"CLARA LOH JING XUAN",grp:5},
+    {sn:23,cls:"6HU",name:"KHONG KAI LE KYLA",grp:6},
+    {sn:5,cls:"6FA",name:"MEGAN LIM WAN JING",grp:6},
+    {sn:10,cls:"6FA",name:"JOHANNA TAN",grp:6},
+    {sn:11,cls:"6FA",name:"TAN YI TING CLARICE",grp:6},
+    {sn:27,cls:"6HU",name:"CHUAH HUIYI KATELYN",grp:6},
+    {sn:22,cls:"6HU",name:"CHENG LE MIN VICTORIA",grp:7},
+    {sn:7,cls:"6FA",name:"DEVISHA KESAVAN",grp:7},
+    {sn:4,cls:"6FA",name:"SO GUAN TING ELLENOR",grp:7},
+    {sn:3,cls:"6FA",name:"LIM YU XUAN ASHLEY",grp:7},
+    {sn:14,cls:"6FA",name:"SOPHIA HANNAH LIM YING",grp:8},
+    {sn:15,cls:"6FA",name:"YEO JING XUAN",grp:8},
+    {sn:20,cls:"6HU",name:"JAMAINE TAN JIA LE",grp:8},
+    {sn:25,cls:"6HU",name:"OLIVIA TEO BAO WEN",grp:8},
+    {sn:36,cls:"6LO",name:"CHEN ZHIEN HAILEY",grp:8},
+    {sn:1,cls:"6FA",name:"SARAH CHIANG MUN WAI",grp:9},
+    {sn:6,cls:"6FA",name:"SHANAYA SACHIN BAGWE",grp:9},
+    {sn:32,cls:"6LO",name:"CHARIS TAN LE EN",grp:9},
+    {sn:34,cls:"6LO",name:"ONG LEYAN SOPHIA",grp:9},
+  ];
+  state.lastSync="offline";
+}
+
+let toastTimer;
+function showToast(msg,type="ok"){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className=type==="err"?"err":"";t.style.display="block";
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.style.display="none";},2500);
+}
+
+function pill(code){
+  const s=STATUS_MAP[code];if(!s)return"";
+  return`<span class="pill" style="background:${s.bg};color:${s.fg};border-color:${s.border}">${code}</span>`;
+}
+
+function render(){
+  if(!ROSTER.length){document.getElementById("app").innerHTML='<div class="loading">⏳ Loading roster…</div>';return;}
+  const{assignments,log,activeAsgn,activeGrp,tab,showBackup,lastSync}=state;
+  const asgnLog=activeAsgn?(log[activeAsgn]||{}):{};
+  const groups=[...new Set(ROSTER.map(s=>s.grp))].sort((a,b)=>a-b);
+  const grpStudents=ROSTER.filter(s=>s.grp===activeGrp);
+  const grpRoundCount=Math.max(0,...grpStudents.map(s=>(asgnLog[s.sn]?.rounds||[]).length));
+  const summaryRows=ROSTER.map(s=>{const r=asgnLog[s.sn]?.rounds||[];return{...s,rounds:r,latest:r[r.length-1]||null};});
+  const pending=summaryRows.filter(s=>!s.latest);
+  const needsR=summaryRows.filter(s=>s.latest==="R");
+  const allGood=summaryRows.filter(s=>s.latest==="OK");
+
+  let h=`<div class="header">
+    <div><h1>📚 P6 MA Tracker</h1><p>${assignments.length} assignment${assignments.length!==1?"s":""} · ${ROSTER.length} students</p></div>
+    <div class="header-btns">
+      <button class="btn ${showBackup?"btn-dark":""}" onclick="toggleBackup()">⚙ Backup</button>
+      ${activeAsgn?'<button class="btn" onclick="exportCSV()">↓ CSV</button>':""}
+    </div>
+  </div>`;
+
+  h+=`<div class="sync-row">
+    <button class="sync-btn" onclick="syncRoster()">🔄 Sync Roster</button>
+    <span class="sync-status">${lastSync==="offline"?"⚠️ Offline — using saved roster":lastSync?`Last synced ${lastSync}`:"Syncing…"}</span>
+  </div>`;
+
+  if(showBackup) h+=`<div class="backup-panel">
+    <div class="section-label">BACKUP &amp; SYNC</div>
+    <p style="font-size:12px;color:#64748b;line-height:1.6">Export a backup on one device, import on another. Data is merged — nothing overwritten.</p>
+    <div class="backup-btns">
+      <button class="btn-dark" onclick="exportBackup()">↓ Export Backup</button>
+      <button class="btn-dashed" onclick="document.getElementById('import-file').click()">↑ Import Backup</button>
+    </div>
+  </div>`;
+
+  h+=`<div class="card"><div class="section-label">ASSIGNMENT</div>`;
+  if(assignments.length){
+    h+=`<div class="chip-row">`;
+    for(const a of assignments) h+=`<span style="display:inline-flex;align-items:center;gap:3px"><button class="chip ${activeAsgn===a.id?"active":""}" onclick="setAsgn('${a.id}')">${a.label}</button><button class="del-btn" onclick="deleteAsgn('${a.id}')">✕</button></span>`;
+    h+=`</div>`;
+  }
+  h+=`<div class="input-row"><input id="nl" placeholder="New assignment name…" oninput="state.newLabel=this.value" onkeydown="if(event.key==='Enter')addAssignment()"/><button class="btn-purple" onclick="addAssignment()">+ Add</button></div></div>`;
+
+  if(!activeAsgn){
+    h+=`<div class="empty">Add an assignment above to start tracking.</div>`;
+  } else {
+    h+=`<div class="tabs">
+      <button class="tab ${tab==="track"?"active":""}" onclick="setTab('track')">📝 Track by Group</button>
+      <button class="tab ${tab==="summary"?"active":""}" onclick="setTab('summary')">📊 Summary (${pending.length} pending)</button>
+    </div>`;
+
+    if(tab==="track"){
+      h+=`<div class="round-badges"><span style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:.5px">ROUND</span>`;
+      for(let r=1;r<=4;r++) h+=`<span class="round-badge ${grpRoundCount>=r?"done":""}">${roundLabel(r)}</span>`;
+      h+=`</div><div class="group-grid" style="grid-template-columns:repeat(${Math.min(groups.length,9)},1fr)">`;
+      for(const g of groups){
+        const gs=ROSTER.filter(s=>s.grp===g);
+        const done=gs.every(s=>(asgnLog[s.sn]?.rounds||[]).length>0);
+        h+=`<button class="grp-btn ${activeGrp===g?"active":done?"done":""}" onclick="setGrp(${g})">${g}</button>`;
+      }
+      h+=`</div>`;
+      for(const s of grpStudents){
+        const rounds=asgnLog[s.sn]?.rounds||[];
+        const latest=rounds[rounds.length-1];
+        const fn=s.name.split(" ")[0],rn=s.name.split(" ").slice(1).join(" ");
+        h+=`<div class="student-card"><div class="student-top"><div>
+          <span style="font-size:15px;font-weight:700;color:#1e293b">${fn}</span>
+          <span style="font-size:12px;color:#94a3b8;margin-left:6px">${rn}</span>
+          <span style="font-size:10px;font-weight:700;color:#94a3b8;background:#f1f5f9;padding:1px 6px;border-radius:4px;margin-left:8px">${s.cls}</span>
+        </div><div class="rounds-row">`;
+        for(let i=0;i<rounds.length;i++) h+=`<div class="round-item"><span class="round-lbl">R${i+1}</span>${pill(rounds[i])}</div>`;
+        if(rounds.length) h+=`<button class="undo-btn" onclick="undoLast(${s.sn})">↩</button>`;
+        h+=`</div></div><div class="status-row"><span class="round-num">R${rounds.length+1}</span>`;
+        for(const st of STATUSES){
+          const active=latest===st.code;
+          h+=`<button class="status-btn" onclick="logStatus(${s.sn},'${st.code}')" style="border-color:${st.border};background:${active?st.bg:"#fafafa"};color:${st.fg};opacity:${active?1:.75}">${st.code}</button>`;
+        }
+        h+=`</div></div>`;
+      }
+      const nextGrp=groups[groups.indexOf(activeGrp)+1];
+      h+=`<div class="next-grp">${nextGrp?`<button onclick="setGrp(${nextGrp})">Next group (${nextGrp}) →</button>`:`<span style="font-size:12px;color:#94a3b8">Last group — all done!</span>`}</div>`;
+    }
+
+    if(tab==="summary"){
+      h+=`<div class="stats-grid">
+        <div class="stat-card"><div class="stat-val" style="color:#ef4444">${pending.length}</div><div class="stat-lbl">Not logged</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:#eab308">${needsR.length}</div><div class="stat-lbl">Needs recorr</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:#22c55e">${allGood.length}</div><div class="stat-lbl">All good</div></div>
+      </div><div class="summary-list">`;
+      for(const s of summaryRows){
+        const fn=s.name.split(" ")[0],rn=s.name.split(" ").slice(1).join(" ");
+        h+=`<div class="summary-row ${s.latest==="R"?"needs-r":""}">
+          <span style="font-size:11px;color:#94a3b8;min-width:16px;font-weight:600">${s.grp}</span>
+          <span style="font-size:11px;color:#94a3b8;min-width:28px">${s.cls}</span>
+          <span style="flex:1;font-size:13px;font-weight:600;color:#1e293b">${fn} <span style="font-weight:400;color:#64748b;font-size:12px">${rn}</span></span>
+          <div style="display:flex;gap:3px;align-items:center">`;
+        for(let i=0;i<s.rounds.length;i++) h+=`<div class="round-item"><span class="round-lbl">R${i+1}</span>${pill(s.rounds[i])}</div>`;
+        if(!s.latest) h+=`<span style="font-size:11px;color:#cbd5e1">—</span>`;
+        h+=`</div></div>`;
+      }
+      h+=`</div>`;
+    }
+  }
+
+  document.getElementById("app").innerHTML=h;
+  const nl=document.getElementById("nl");if(nl)nl.value=state.newLabel;
+}
+
+function toggleBackup(){state.showBackup=!state.showBackup;saveState();render();}
+function setTab(t){state.tab=t;saveState();render();}
+function setGrp(g){state.activeGrp=g;saveState();render();}
+function setAsgn(id){state.activeAsgn=id;saveState();render();}
+
+async function syncRoster(){
+  showToast("Syncing roster…");
+  await fetchRoster();
+  if(state.lastSync!=="offline") showToast("Roster updated ✓");
+  else showToast("Offline — using saved roster","err");
+}
+
+function addAssignment(){
+  const label=state.newLabel.trim();if(!label)return;
+  const id=Date.now().toString();
+  state.assignments.push({id,label});state.log[id]={};state.activeAsgn=id;state.newLabel="";
+  saveState();render();
+}
+function deleteAsgn(id){
+  if(!confirm("Delete this assignment and all its data?"))return;
+  state.assignments=state.assignments.filter(a=>a.id!==id);delete state.log[id];
+  state.activeAsgn=state.assignments.length?state.assignments[0].id:null;
+  saveState();render();
+}
+function logStatus(sn,code){
+  if(!state.activeAsgn)return;
+  const al=state.log[state.activeAsgn]||{};const r=al[sn]?.rounds||[];
+  al[sn]={rounds:[...r,code]};state.log[state.activeAsgn]=al;
+  saveState();
+  const name=ROSTER.find(s=>s.sn===sn)?.name.split(" ")[0];
+  showToast(`${name} → ${code}`);render();
+}
+function undoLast(sn){
+  if(!state.activeAsgn)return;
+  const r=[...(state.log[state.activeAsgn]?.[sn]?.rounds||[])];if(!r.length)return;
+  r.pop();state.log[state.activeAsgn][sn]={rounds:r};saveState();render();
+}
+function exportCSV(){
+  const asgn=state.assignments.find(a=>a.id===state.activeAsgn);
+  const al=state.log[state.activeAsgn]||{};
+  const maxR=Math.max(1,...ROSTER.map(s=>(al[s.sn]?.rounds||[]).length));
+  const hdr=Array.from({length:maxR},(_,i)=>roundLabel(i+1));
+  const rows=["S/N,Class,Group,Name,"+hdr.join(",")];
+  for(const s of ROSTER){const r=al[s.sn]?.rounds||[];const c=Array.from({length:maxR},(_,i)=>r[i]||"");rows.push(`${s.sn},"${s.cls}",${s.grp},"${s.name}",${c.join(",")}`);}
+  dl(rows.join("\n"),`${asgn?.label||"export"}_${today()}.csv`,"text/csv");
+}
+function exportBackup(){
+  dl(JSON.stringify({assignments:state.assignments,log:state.log,exportedAt:new Date().toISOString()},null,2),`p6-backup-${today()}.json`,"application/json");
+  showToast("Backup downloaded ✓");
+}
+function dl(content,filename,type){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([content],{type}));a.download=filename;a.click();
+}
+document.getElementById("import-file").addEventListener("change",function(e){
+  const file=e.target.files?.[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);if(!data.assignments||!data.log)throw 0;
+      const dt=data.exportedAt?new Date(data.exportedAt).toLocaleString("en-SG"):"unknown date";
+      if(!confirm(`Import backup from ${dt}?\n\nThis merges with current data.`))return;
+      for(const a of data.assignments){
+        if(!state.assignments.find(x=>x.id===a.id))state.assignments.push(a);
+        if(!state.log[a.id])state.log[a.id]=data.log[a.id]||{};
+        else{const bl=data.log[a.id]||{};for(const[sn,v]of Object.entries(bl)){if(!state.log[a.id][sn])state.log[a.id][sn]=v;}}
+      }
+      if(!state.activeAsgn&&state.assignments.length)state.activeAsgn=state.assignments[0].id;
+      saveState();showToast("Backup imported ✓");render();
+    }catch{showToast("Invalid backup file","err");}
+  };
+  reader.readAsText(file);e.target.value="";
+});
+
+loadState();
+useFallbackRoster();
+render();
+fetchRoster();
+</script>
+</body>
+</html>
